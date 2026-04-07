@@ -1,0 +1,41 @@
+1. DESIGN PHILOSOPHY
+Visual: "Live Wire Modernism" — the UI channels the raw industrial beauty of the objects themselves, but rendered through a clean, contemporary lens. Think the aesthetic of a well-designed science museum exhibit or a premium hardware brand: dark surfaces, precise grid layouts, and pops of color borrowed directly from the glass — cobalt, amber, aqua. The app should feel like it was designed in 2025 about 1910, not designed in 1910.
+Mood: bold, precise, collector-focused, visually electric, quietly obsessive.
+Important: No skeuomorphic textures, no fake aged paper, no serif-heavy "heritage" styling. The objects are vintage — the interface is not. Keep it sharp, gridded, and confident.
+
+2. COLORS
+#0F0F0F — Main background (near-black, like a photography lightbox for glass)
+#F5F5F3 — Primary text & high-contrast elements
+#1A1A1A — Secondary panels / card surfaces
+#6B6B6B — Secondary text / muted labels
+#4A9EBF — Primary accent (telegraph aqua — pulled from Hemingray aqua glass)
+#2A2A2A — Outline / stroke / dividers
+#D97B2B — Secondary accent (amber glass — used for warnings, era tags, featured items)
+#C0392B — Critical errors only
+Important: The two accents — aqua and amber — should never appear together on the same element. Aqua is interactive and primary; amber is informational and secondary. The dark background is non-negotiable: glass objects are best showcased against darkness, like specimens in a display case under directional light.
+
+3. TYPOGRAPHY
+Display / Headings: DM Sans (or Geist) — clean, geometric, modern. Wide tracking on labels. No serifs anywhere.
+Body / Descriptions: Inter — neutral, legible, comfortable at small sizes. Used for all prose fields and condition notes.
+Monospace / Identifiers: JetBrains Mono — for Grid Identifiers like TIMA-HEMINGRAY-42-AMBER-1910-082, CD numbers, patent dates, voltage specs, and any technical field value. Renders like a part number or serial readout.
+Important: All type is set in weights 300–500 only. Nothing heavier. The dark background means lighter weights read with elegance rather than weakness. Uppercase + wide tracking is used for section labels and category tags — never for body copy.
+
+4. SURFACE & TEXTURE LANGUAGE
+
+Backgrounds: flat near-black — no noise, no gradients, no grid overlays
+Cards: #1A1A1A surfaces with a subtle 1px border in #2A2A2A — elevated but not glowing
+Glass color swatches: each insulator entry gets a small filled circle or pill rendered in its actual glass color (cobalt #1B4B8A, aqua #5BB8C4, amber #C8821A, root beer #4A2010) — this is the primary visual differentiator between entries in the list view
+Photography: insulator and key photography should always be presented on black or near-black — no lifestyle staging, pure specimen documentation
+Accent lines: single 1px aqua rule used sparingly as a selected-state indicator or section header underline
+
+
+5. INTERACTION PRINCIPLES
+
+Transitions: fast and precise — 150–200ms ease-out. This is a modern app, not a library reading room.
+Selected state: aqua left-border rule + subtle #1E2E33 background tint on cards
+Empty states: minimal — a single monospaced line like NO ENTRIES IN THIS CATEGORY YET. centered, no illustrations
+Loading: a thin aqua progress bar across the top of the screen, no spinners
+Navigation: bottom tab bar on mobile (modern native pattern) with icon + label; top segmented control for filtering within a category
+Search: prominent, always visible — full-width at the top of list views, monospaced placeholder text like SEARCH CD NUMBER OR MANUFACTURER…
+
+Important: The app is used by people who photograph their collection obsessively. Image display is a first-class feature — full-bleed, dark-surrounded, pinch-to-zoom. Never crop a specimen photo into a thumbnail circle.
