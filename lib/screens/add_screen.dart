@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -250,29 +251,47 @@ class _AddScreenState extends ConsumerState<AddScreen> {
             bottom: 30.h,
             child: GestureDetector(
               onTap: _save,
-              child: Container(
-                height: 64.h,
-                decoration: BoxDecoration(
-                  color: kAccent,
-                  borderRadius: BorderRadius.circular(kRadiusXLarge),
-                  boxShadow: const [kShadowCyan],
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.save_rounded, color: kBackground, size: 24.sp),
-                      SizedBox(width: 12.w),
-                      Text(
-                        widget.isEdit ? 'SAVE CHANGES' : 'COMMIT TO ARCHIVE',
-                        style: GoogleFonts.jetBrainsMono(
-                          color: kBackground,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.0,
-                        ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(kRadiusXLarge),
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    height: 64.h,
+                    decoration: BoxDecoration(
+                      color: kAccent.withAlpha(25),
+                      borderRadius: BorderRadius.circular(kRadiusXLarge),
+                      border: Border.all(
+                        color: kAccent.withAlpha(150),
+                        width: 1.5,
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: kAccent.withAlpha(30),
+                          blurRadius: 20,
+                          spreadRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.save_rounded, color: kAccent, size: 24.sp),
+                          SizedBox(width: 12.w),
+                          Text(
+                            widget.isEdit
+                                ? 'SAVE CHANGES'
+                                : 'COMMIT TO ARCHIVE',
+                            style: GoogleFonts.jetBrainsMono(
+                              color: kAccent,
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -294,7 +313,7 @@ class _AddScreenState extends ConsumerState<AddScreen> {
         decoration: BoxDecoration(
           color: kPanelBg.withAlpha(150),
           borderRadius: BorderRadius.circular(kRadiusLarge),
-          border: Border.all(color: kOutline),
+          border: Border.all(color: kAccent.withAlpha(80)),
         ),
         clipBehavior: Clip.antiAlias,
         child: displayPath != null && File(displayPath).existsSync()
@@ -349,7 +368,7 @@ class _AddScreenState extends ConsumerState<AddScreen> {
       decoration: BoxDecoration(
         color: kPanelBg.withAlpha(100),
         borderRadius: BorderRadius.circular(kRadiusLarge),
-        border: Border.all(color: kOutline),
+        border: Border.all(color: kAccent.withAlpha(80)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,7 +550,7 @@ class _SavingDialog extends StatelessWidget {
         decoration: BoxDecoration(
           color: kPanelBg,
           borderRadius: BorderRadius.circular(kRadiusLarge),
-          border: Border.all(color: kOutline),
+          border: Border.all(color: kAccent.withAlpha(120)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

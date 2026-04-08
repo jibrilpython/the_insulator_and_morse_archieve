@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +22,8 @@ class ShowcaseScreen extends ConsumerStatefulWidget {
 class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _atmosphereController;
-  ArchiveItemModel? _focusedItem;
+  String? _focusedId;
+  bool _isScrollLocked = false;
 
   @override
   void initState() {
@@ -41,6 +43,10 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
   @override
   Widget build(BuildContext context) {
     final allEntries = ref.watch(projectProvider).entries;
+
+    final focusedItem = _focusedId != null
+        ? allEntries.firstWhereOrNull((e) => e.id == _focusedId)
+        : null;
 
     // Group entries into lines of 4
     final List<List<ArchiveItemModel>> wireGroups = [];
@@ -71,18 +77,25 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
             child: allEntries.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
-                    padding: EdgeInsets.only(top: 80.h, bottom: 200.h),
-                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.only(top: 12.h, bottom: 200.h),
+                    physics: _isScrollLocked
+                        ? const NeverScrollableScrollPhysics()
+                        : const BouncingScrollPhysics(),
                     itemCount: wireGroups.length + 1,
                     itemBuilder: (context, index) {
                       if (index == 0) return _buildHeader();
                       return _TelegraphWireWidget(
                         nodes: wireGroups[index - 1],
                         isFocusDimmed:
-                            _focusedItem != null &&
-                            !wireGroups[index - 1].contains(_focusedItem),
+                            focusedItem != null &&
+                            !wireGroups[index - 1].any(
+                              (e) => e.id == focusedItem.id,
+                            ),
+                        onDragStateChanged: (locked) {
+                          setState(() => _isScrollLocked = locked);
+                        },
                         onFocus: (item) {
-                          setState(() => _focusedItem = item);
+                          setState(() => _focusedId = item.id);
                         },
                       );
                     },
@@ -90,10 +103,10 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
           ),
 
           // 3. Dark Overlay when Focused
-          if (_focusedItem != null)
+          if (focusedItem != null)
             Positioned.fill(
               child: GestureDetector(
-                onTap: () => setState(() => _focusedItem = null),
+                onTap: () => setState(() => _focusedId = null),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   color: Colors.black.withAlpha(200),
@@ -105,11 +118,11 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
           AnimatedPositioned(
             duration: const Duration(milliseconds: 400),
             curve: Curves.fastOutSlowIn,
-            bottom: _focusedItem != null ? 0 : -600.h,
+            bottom: focusedItem != null ? 0 : -600.h,
             left: 0,
             right: 0,
             height: 480.h,
-            child: _buildFocusSlider(_focusedItem),
+            child: _buildFocusSlider(focusedItem),
           ),
         ],
       ),
@@ -118,25 +131,79 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
+      padding: EdgeInsets.fromLTRB(20.w, 64.h, 20.w, 24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'TELEGRAPH WEB',
-            style: GoogleFonts.jetBrainsMono(
-              color: kAccent,
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.0,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'TELEGAPH WEB // DISPLAY',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: kAccent,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'THE\nSHOWCASE',
+                    style: GoogleFonts.dmSans(
+                      color: kPrimaryText,
+                      fontSize: 48.sp,
+                      fontWeight: FontWeight.w900,
+                      height: 0.9,
+                      letterSpacing: -2.0,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: kPanelBg.withAlpha(150),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: kOutline),
+                ),
+                child: Icon(
+                  Icons.bubble_chart_rounded,
+                  color: kAccent,
+                  size: 24.sp,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 4.h),
-          Text('The Showcase', style: Theme.of(context).textTheme.displayLarge),
-          SizedBox(height: 8.h),
-          Text(
-            'Tension dynamics. Pull a node to inspect.',
-            style: GoogleFonts.inter(color: kSecondaryText, fontSize: 13.sp),
+          SizedBox(height: 24.h),
+          // Status Pill
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: kPanelBg.withAlpha(150),
+              borderRadius: BorderRadius.circular(kRadiusPill),
+              border: Border.all(color: kOutline),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _StatusPulseDot(),
+                SizedBox(width: 10.w),
+                Text(
+                  'ACTIVE MAPPING',
+                  style: GoogleFonts.jetBrainsMono(
+                    color: kPrimaryText,
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -148,7 +215,10 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
     final imagePath = ref.watch(imageProvider).getImagePath(item.photoPath);
     final glassColor = item.glassColorOrGlazeType.isNotEmpty
         ? getGlassSwatchColor(item.glassColorOrGlazeType)
-        : kAccent;
+        : kSecondaryText;
+
+    final allEntries = ref.read(projectProvider).entries;
+    final index = allEntries.indexOf(item);
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(
@@ -156,182 +226,209 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
       ),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          padding: EdgeInsets.all(32.w),
-          decoration: BoxDecoration(
-            color: kPanelBg.withAlpha(200),
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(kRadiusXLarge),
-            ),
-            border: Border(
-              top: BorderSide(color: glassColor.withAlpha(100), width: 1.5),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(150),
-                blurRadius: 40,
-                spreadRadius: 10,
-                offset: const Offset(0, -10),
+        child: GestureDetector(
+          onTap: () {
+            if (index != -1) {
+              HapticFeedback.mediumImpact();
+              Navigator.pushNamed(
+                context,
+                '/info_screen',
+                arguments: {'index': index},
+              );
+            }
+          },
+          child: Container(
+            padding: EdgeInsets.all(32.w),
+            decoration: BoxDecoration(
+              color: kPanelBg.withAlpha(200),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(kRadiusXLarge),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 8.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: glassColor.withAlpha(30),
-                      borderRadius: BorderRadius.circular(kRadiusPill),
-                      border: Border.all(color: glassColor.withAlpha(80)),
-                    ),
-                    child: Text(
-                      item.gridIdentifier.isEmpty
-                          ? 'UNK-ID'
-                          : item.gridIdentifier,
-                      style: GoogleFonts.jetBrainsMono(
-                        color: glassColor,
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() => _focusedItem = null),
-                    child: Container(
-                      padding: EdgeInsets.all(10.w),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        color: kPrimaryText,
-                        size: 24.sp,
-                      ),
-                    ),
-                  ),
-                ],
+              border: Border(
+                top: BorderSide(color: glassColor.withAlpha(100), width: 1.5),
               ),
-              SizedBox(height: 32.h),
-
-              // Content Body
-              Expanded(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(150),
+                  blurRadius: 40,
+                  spreadRadius: 10,
+                  offset: const Offset(0, -10),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header (Keep GestureDetector here for the close icon)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Glass Node / Image Hub
-                    Container(
-                      width: 140.w,
-                      height: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(kRadiusLarge),
-                        border: Border.all(color: kOutline),
-                        boxShadow: [
-                          BoxShadow(
-                            color: glassColor.withAlpha(30),
-                            blurRadius: 40,
-                            spreadRadius: 0,
+                    Flexible(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: glassColor.withAlpha(30),
+                          borderRadius: BorderRadius.circular(kRadiusPill),
+                          border: Border.all(color: glassColor.withAlpha(80)),
+                        ),
+                        child: Text(
+                          item.gridIdentifier.isEmpty
+                              ? 'UNK-ID'
+                              : item.gridIdentifier,
+                          style: GoogleFonts.jetBrainsMono(
+                            color: glassColor,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.0,
                           ),
-                        ],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      clipBehavior: Clip.antiAlias,
-                      child: (imagePath != null && File(imagePath).existsSync())
-                          ? Image.file(File(imagePath), fit: BoxFit.cover)
-                          : Center(
-                              child: Icon(
-                                Icons.camera_alt_outlined,
-                                color: kOutline.withAlpha(150),
-                                size: 32.sp,
-                              ),
-                            ),
                     ),
-                    SizedBox(width: 24.w),
-
-                    // Typographic Details
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'MANUFACTURER',
-                              style: GoogleFonts.jetBrainsMono(
-                                color: kSecondaryText,
-                                fontSize: 9.sp,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              item.manufacturerAndShopMark.isEmpty
-                                  ? 'Unknown'
-                                  : item.manufacturerAndShopMark,
-                              style: GoogleFonts.dmSans(
-                                color: kPrimaryText,
-                                fontSize: 22.sp,
-                                fontWeight: FontWeight.w400,
-                                height: 1.1,
-                              ),
-                            ),
-                            SizedBox(height: 24.h),
-                            Text(
-                              'PROFILE / STYLE',
-                              style: GoogleFonts.jetBrainsMono(
-                                color: kSecondaryText,
-                                fontSize: 9.sp,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              item.cdOrStyleNumber.isEmpty
-                                  ? '---'
-                                  : item.cdOrStyleNumber,
-                              style: GoogleFonts.jetBrainsMono(
-                                color: glassColor,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            SizedBox(height: 24.h),
-                            Text(
-                              'PRODUCTION ERA',
-                              style: GoogleFonts.jetBrainsMono(
-                                color: kSecondaryText,
-                                fontSize: 9.sp,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              item.eraOfProduction.isEmpty
-                                  ? 'Unknown'
-                                  : item.eraOfProduction,
-                              style: GoogleFonts.inter(
-                                color: kPrimaryText,
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                    SizedBox(width: 40.w),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        setState(() => _focusedId = null);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(10.w),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: kPrimaryText,
+                          size: 24.sp,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                SizedBox(height: 32.h),
+
+                // Content Body
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Glass Node / Image Hub
+                      Container(
+                        width: 140.w,
+                        height: 260.h,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(kRadiusLarge),
+                          border: Border.all(color: kOutline),
+                          boxShadow: [
+                            BoxShadow(
+                              color: glassColor.withAlpha(30),
+                              blurRadius: 40,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child:
+                            (imagePath != null && File(imagePath).existsSync())
+                            ? Image.file(File(imagePath), fit: BoxFit.cover)
+                            : Center(
+                                child: Icon(
+                                  Icons.camera_alt_outlined,
+                                  color: kOutline.withAlpha(150),
+                                  size: 32.sp,
+                                ),
+                              ),
+                      ),
+                      SizedBox(width: 24.w),
+
+                      // Typographic Details
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'MANUFACTURER',
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: kSecondaryText,
+                                  fontSize: 9.sp,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                item.manufacturerAndShopMark.isEmpty
+                                    ? 'Unknown'
+                                    : item.manufacturerAndShopMark,
+                                style: GoogleFonts.dmSans(
+                                  color: kPrimaryText,
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.1,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 24.h),
+                              Text(
+                                'PROFILE / STYLE',
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: kSecondaryText,
+                                  fontSize: 9.sp,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                item.cdOrStyleNumber.isEmpty
+                                    ? '---'
+                                    : item.cdOrStyleNumber,
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: glassColor,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 24.h),
+                              Text(
+                                'PRODUCTION ERA',
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: kSecondaryText,
+                                  fontSize: 9.sp,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                item.eraOfProduction.isEmpty
+                                    ? 'Unknown'
+                                    : item.eraOfProduction,
+                                style: GoogleFonts.inter(
+                                  color: kPrimaryText,
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -366,11 +463,13 @@ class _ShowcaseScreenState extends ConsumerState<ShowcaseScreen>
 class _TelegraphWireWidget extends StatefulWidget {
   final List<ArchiveItemModel> nodes;
   final bool isFocusDimmed;
+  final Function(bool) onDragStateChanged;
   final Function(ArchiveItemModel) onFocus;
 
   const _TelegraphWireWidget({
     required this.nodes,
     required this.isFocusDimmed,
+    required this.onDragStateChanged,
     required this.onFocus,
   });
 
@@ -414,53 +513,43 @@ class _TelegraphWireWidgetState extends State<_TelegraphWireWidget>
     return Offset(spacing * (index + 1), height / 2);
   }
 
-  void _handlePanStart(DragStartDetails details, BoxConstraints constraints) {
+  void _handlePanStart(
+    DragStartDetails details,
+    BoxConstraints constraints,
+    int index,
+  ) {
     if (widget.isFocusDimmed) return;
 
-    final touchPos = details.localPosition;
-    int closestIndex = -1;
-    double minDist = double.infinity;
-
-    for (int i = 0; i < widget.nodes.length; i++) {
-      final nodePos = _getBasePosition(
-        i,
-        constraints.maxWidth,
-        constraints.maxHeight,
-      );
-      final dist = (touchPos - nodePos).distance;
-      if (dist < 60.w) {
-        // Hit zone
-        if (dist < minDist) {
-          minDist = dist;
-          closestIndex = i;
-        }
-      }
-    }
-
-    if (closestIndex != -1) {
-      _activeNode = closestIndex;
-      _isDragging = true;
-      _dragOffset =
-          touchPos -
-          _getBasePosition(
-            closestIndex,
-            constraints.maxWidth,
-            constraints.maxHeight,
-          );
-      _springController.stop();
-      setState(() {});
-    }
+    _activeNode = index;
+    _isDragging = true;
+    _dragOffset = Offset.zero;
+    widget.onDragStateChanged(true); // LOCK SCROLLING
+    _springController.stop();
+    setState(() {});
   }
 
   void _handlePanUpdate(DragUpdateDetails details) {
     if (!_isDragging || _activeNode == null) return;
+
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final localPos = renderBox.globalToLocal(details.globalPosition);
+
+    final constraints = renderBox.size;
+    final basePos = _getBasePosition(
+      _activeNode!,
+      constraints.width,
+      constraints.height,
+    );
+
     setState(() {
-      _dragOffset += details.delta;
+      _dragOffset = localPos - basePos;
     });
   }
 
   void _handlePanEnd(DragEndDetails details) {
     if (!_isDragging || _activeNode == null) return;
+
+    widget.onDragStateChanged(false); // RELEASE SCROLLING
     _isDragging = false;
 
     // TAP DETECTION FALLBACK
@@ -496,6 +585,7 @@ class _TelegraphWireWidgetState extends State<_TelegraphWireWidget>
 
   void _handlePanCancel() {
     if (_isDragging) {
+      widget.onDragStateChanged(false); // RELEASE SCROLLING
       setState(() {
         _activeNode = null;
         _isDragging = false;
@@ -504,38 +594,43 @@ class _TelegraphWireWidgetState extends State<_TelegraphWireWidget>
     }
   }
 
-  void _handleTapUp(TapUpDetails details, BoxConstraints constraints) {
+  void _handleTapUp(
+    TapUpDetails details,
+    BoxConstraints constraints,
+    int index,
+  ) {
     if (widget.isFocusDimmed) return;
+    widget.onDragStateChanged(false);
+    widget.onFocus(widget.nodes[index]);
+    HapticFeedback.lightImpact();
+    setState(() {
+      _activeNode = null;
+      _isDragging = false;
+      _dragOffset = Offset.zero;
+    });
+  }
 
-    final touchPos = details.localPosition;
-    int closestIndex = -1;
-    double minDist = double.infinity;
+  Widget _buildNodeHitTarget(int index, BoxConstraints constraints) {
+    final pos = _getBasePosition(
+      index,
+      constraints.maxWidth,
+      constraints.maxHeight,
+    );
 
-    for (int i = 0; i < widget.nodes.length; i++) {
-      final nodePos = _getBasePosition(
-        i,
-        constraints.maxWidth,
-        constraints.maxHeight,
-      );
-      final dist = (touchPos - nodePos).distance;
-      if (dist < 60.w) {
-        // Hit zone
-        if (dist < minDist) {
-          minDist = dist;
-          closestIndex = i;
-        }
-      }
-    }
-
-    if (closestIndex != -1) {
-      widget.onFocus(widget.nodes[closestIndex]);
-      HapticFeedback.lightImpact();
-      setState(() {
-        _activeNode = null;
-        _isDragging = false;
-        _dragOffset = Offset.zero;
-      });
-    }
+    return Positioned(
+      left: pos.dx - 50.w,
+      top: pos.dy - 50.w,
+      width: 100.w,
+      height: 100.w,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanStart: (details) => _handlePanStart(details, constraints, index),
+        onPanUpdate: _handlePanUpdate,
+        onPanEnd: _handlePanEnd,
+        onPanCancel: _handlePanCancel,
+        onTapUp: (details) => _handleTapUp(details, constraints, index),
+      ),
+    );
   }
 
   @override
@@ -549,38 +644,41 @@ class _TelegraphWireWidgetState extends State<_TelegraphWireWidget>
         margin: EdgeInsets.symmetric(vertical: 24.h),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onPanStart: (details) => _handlePanStart(details, constraints),
-              onPanUpdate: _handlePanUpdate,
-              onPanEnd: _handlePanEnd,
-              onPanCancel: _handlePanCancel,
-              onTapUp: (details) => _handleTapUp(details, constraints),
-              child: AnimatedBuilder(
-                animation: Listenable.merge([
-                  _springController,
-                  _sparkController,
-                ]),
-                builder: (context, child) {
-                  Offset currentAnimationOffset = Offset.zero;
-                  if (!_isDragging &&
-                      _activeNode != null &&
-                      _springController.isAnimating) {
-                    currentAnimationOffset = _springAnimation.value;
-                  }
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // 1. The Physics Painter (Always behind)
+                AnimatedBuilder(
+                  animation: Listenable.merge([
+                    _springController,
+                    _sparkController,
+                  ]),
+                  builder: (context, child) {
+                    Offset currentAnimationOffset = Offset.zero;
+                    if (!_isDragging &&
+                        _activeNode != null &&
+                        _springController.isAnimating) {
+                      currentAnimationOffset = _springAnimation.value;
+                    }
 
-                  return CustomPaint(
-                    painter: _WirePainter(
-                      nodes: widget.nodes,
-                      activeNode: _activeNode,
-                      isDragging: _isDragging,
-                      dragOffset: _dragOffset,
-                      springOffset: currentAnimationOffset,
-                      sparkProgress: _sparkController.value,
-                    ),
-                  );
-                },
-              ),
+                    return CustomPaint(
+                      size: Size(constraints.maxWidth, constraints.maxHeight),
+                      painter: _WirePainter(
+                        nodes: widget.nodes,
+                        activeNode: _activeNode,
+                        isDragging: _isDragging,
+                        dragOffset: _dragOffset,
+                        springOffset: currentAnimationOffset,
+                        sparkProgress: _sparkController.value,
+                      ),
+                    );
+                  },
+                ),
+
+                // 2. Precision Hit Targets (Over each node)
+                for (int i = 0; i < widget.nodes.length; i++)
+                  _buildNodeHitTarget(i, constraints),
+              ],
             );
           },
         ),
@@ -729,7 +827,8 @@ class _WirePainter extends CustomPainter {
         oldDelegate.springOffset != springOffset ||
         oldDelegate.sparkProgress != sparkProgress ||
         oldDelegate.isDragging != isDragging ||
-        oldDelegate.activeNode != activeNode;
+        oldDelegate.activeNode != activeNode ||
+        oldDelegate.nodes != nodes;
   }
 }
 
@@ -746,20 +845,114 @@ class _TelegraphAtmospherePainter extends CustomPainter {
     final paint = Paint();
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
 
-    // Deep sunset amber shift
-    final y = math.sin(animationValue * 2 * math.pi) * 0.2;
+    // 1. Deep Space Pulsing Cyan Gradient
+    final y = math.sin(animationValue * 2 * math.pi) * 0.15;
+    final x = math.cos(animationValue * 2 * math.pi) * 0.1;
 
     final gradient = RadialGradient(
-      center: Alignment(0.0, 1.2 + y),
-      radius: 1.5,
-      colors: [kAccentAmber.withAlpha(20), kBackground],
+      center: Alignment(x, 1.2 + y),
+      radius: 1.8,
+      colors: [kAccent.withAlpha(25), kBackground],
       stops: const [0.0, 1.0],
     );
 
     paint.shader = gradient.createShader(rect);
     canvas.drawRect(rect, paint);
+
+    // 2. Cinematic Cross Mesh
+    final meshPaint = Paint()
+      ..color = Colors.white.withAlpha(15)
+      ..strokeWidth = 1.0;
+
+    const spacing = 40.0;
+    final offsetX = (animationValue * spacing) % spacing;
+    final offsetY = (animationValue * 0.5 * spacing) % spacing;
+
+    for (double i = -spacing; i < size.width + spacing; i += spacing) {
+      for (double j = -spacing; j < size.height + spacing; j += spacing) {
+        final center = Offset(i + offsetX, j + offsetY);
+
+        // Draw a tiny cross
+        canvas.drawLine(
+          center - const Offset(2, 0),
+          center + const Offset(2, 0),
+          meshPaint,
+        );
+        canvas.drawLine(
+          center - const Offset(0, 2),
+          center + const Offset(0, 2),
+          meshPaint,
+        );
+      }
+    }
+
+    // 3. Ambient Dust (Static but flickering based on animation)
+    final random = math.Random(42);
+    for (int i = 0; i < 30; i++) {
+      final pos = Offset(
+        random.nextDouble() * size.width,
+        random.nextDouble() * size.height,
+      );
+      final opacity = (math.sin(animationValue * 4 * math.pi + i) + 1) / 2;
+      canvas.drawCircle(
+        pos,
+        0.8,
+        Paint()..color = Colors.white.withOpacity(opacity * 0.2),
+      );
+    }
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _StatusPulseDot extends StatefulWidget {
+  const _StatusPulseDot();
+
+  @override
+  State<_StatusPulseDot> createState() => _StatusPulseDotState();
+}
+
+class _StatusPulseDotState extends State<_StatusPulseDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          width: 8.w,
+          height: 8.w,
+          decoration: BoxDecoration(
+            color: kAccent,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: kAccent.withAlpha((_controller.value * 150).toInt()),
+                blurRadius: 8 * _controller.value,
+                spreadRadius: 2 * _controller.value,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

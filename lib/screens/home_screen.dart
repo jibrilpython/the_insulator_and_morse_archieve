@@ -76,7 +76,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               _buildSliverAppBar(allEntries.length),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+                  padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
                   child: Column(children: [_buildSearchAndFilters()]),
                 ),
               ),
@@ -106,46 +106,100 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return SliverPadding(
       padding: EdgeInsets.fromLTRB(20.w, 64.h, 20.w, 0),
       sliver: SliverToBoxAdapter(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Library Archive',
-                  style: GoogleFonts.dmSans(
-                    color: kAccent,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ARCHIVE REGISTER // MASTER',
+                      style: GoogleFonts.jetBrainsMono(
+                        color: kAccent,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'THE\nARCHIVE',
+                      style: GoogleFonts.dmSans(
+                        color: kPrimaryText,
+                        fontSize: 48.sp,
+                        fontWeight: FontWeight.w900,
+                        height: 0.9,
+                        letterSpacing: -2.0,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Collection',
-                  style: Theme.of(context).textTheme.displayLarge,
+                // Floating Add Button (Sleeker integration)
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ref.read(inputProvider).clearAll();
+                    ref.read(imageProvider).clearImage();
+                    Navigator.pushNamed(context, '/add_screen');
+                  },
+                  child: Container(
+                    width: 56.w,
+                    height: 56.w,
+                    decoration: BoxDecoration(
+                      color: kAccent,
+                      borderRadius: BorderRadius.circular(kRadiusLarge),
+                      boxShadow: [
+                        BoxShadow(
+                          color: kAccent.withAlpha(50),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.add_rounded,
+                      color: kBackground,
+                      size: 28.sp,
+                    ),
+                  ),
                 ),
               ],
             ),
-            // Floating Add Button
-            GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                ref.read(inputProvider).clearAll();
-                ref.read(imageProvider).clearImage();
-                Navigator.pushNamed(context, '/add_screen');
-              },
-              child: Container(
-                width: 64.w,
-                height: 64.w,
-                decoration: BoxDecoration(
-                  color: kAccent,
-                  borderRadius: BorderRadius.circular(kRadiusLarge),
-                  boxShadow: const [kShadowCyan],
-                ),
-                child: Icon(Icons.add_rounded, color: kBackground, size: 32.sp),
+            SizedBox(height: 24.h),
+            // Specimen Count Pill
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: kPanelBg.withAlpha(150),
+                borderRadius: BorderRadius.circular(kRadiusPill),
+                border: Border.all(color: kOutline),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6.w,
+                    height: 6.w,
+                    decoration: const BoxDecoration(
+                      color: kAccent,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    '${count.toString().padLeft(2, '0')} TOTAL SPECIMENS',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: kPrimaryText,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -238,7 +292,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         margin: EdgeInsets.only(right: 8.w),
         padding: EdgeInsets.symmetric(horizontal: 18.w),
         decoration: BoxDecoration(
-          color: isSelected ? kAccent.withAlpha(40) : kPanelBg.withAlpha(100),
+          color: isSelected ? kAccent.withAlpha(40) : kPanelBg.withAlpha(150),
           borderRadius: BorderRadius.circular(kRadiusPill),
           border: Border.all(
             color: isSelected ? kAccent.withAlpha(120) : kOutline,
@@ -276,9 +330,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 20.h),
-        height: 180.h,
+        height: 160.h,
         decoration: BoxDecoration(
-          color: kPanelBg.withAlpha(200),
+          color: kPanelBg.withAlpha(150),
           borderRadius: BorderRadius.circular(kRadiusXLarge),
           border: Border.all(color: kOutline, width: 1.0),
         ),
@@ -290,43 +344,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               width: 140.w,
               height: double.infinity,
               color: const Color(0xFF050505),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
+              child:
                   (imagePath != null &&
-                          entry.photoPath.isNotEmpty &&
-                          File(imagePath).existsSync())
-                      ? Image.file(File(imagePath), fit: BoxFit.cover)
-                      : Center(
-                          child: Icon(
-                            Icons.water_drop_outlined,
-                            color: kOutline.withAlpha(100),
-                            size: 32.sp,
-                          ),
-                        ),
-                  // Glass color glow
-                  if (glassColor != null)
-                    Positioned(
-                      top: 22.h,
-                      left: 22.w,
-                      child: Container(
-                        width: 10.w,
-                        height: 10.w,
-                        decoration: BoxDecoration(
-                          color: glassColor,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: glassColor.withAlpha(150),
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
+                      entry.photoPath.isNotEmpty &&
+                      File(imagePath).existsSync())
+                  ? Image.file(File(imagePath), fit: BoxFit.cover)
+                  : Center(
+                      child: Icon(
+                        Icons.water_drop_outlined,
+                        color: kOutline.withAlpha(100),
+                        size: 32.sp,
                       ),
                     ),
-                ],
-              ),
             ),
 
             // Right: Info Module
@@ -337,13 +366,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      entry.itemCategory.label,
-                      style: GoogleFonts.dmSans(
-                        color: catColor,
-                        fontSize: 9.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      children: [
+                        if (glassColor != null) ...[
+                          Container(
+                            width: 6.w,
+                            height: 6.w,
+                            decoration: BoxDecoration(
+                              color: glassColor,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          SizedBox(width: 8.w),
+                        ],
+                        Text(
+                          entry.itemCategory.label,
+                          style: GoogleFonts.dmSans(
+                            color: catColor,
+                            fontSize: 9.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 6.h),
                     Text(
@@ -367,29 +411,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           color: kSecondaryText,
                           fontSize: 11.sp,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                     const Spacer(),
                     Row(
                       children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8.w,
-                            vertical: 4.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: kBackground,
-                            borderRadius: BorderRadius.circular(kRadiusSubtle),
-                            border: Border.all(color: kOutline),
-                          ),
-                          child: Text(
-                            entry.eraOfProduction.isEmpty
-                                ? 'Era Unknown'
-                                : entry.eraOfProduction,
-                            style: GoogleFonts.dmSans(
-                              color: kAccentAmber,
-                              fontSize: 9.sp,
-                              fontWeight: FontWeight.w700,
+                        Flexible(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 4.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: kBackground,
+                              borderRadius: BorderRadius.circular(
+                                kRadiusSubtle,
+                              ),
+                              border: Border.all(color: kOutline),
+                            ),
+                            child: Text(
+                              entry.eraOfProduction.isEmpty
+                                  ? 'Era Unknown'
+                                  : entry.eraOfProduction,
+                              style: GoogleFonts.dmSans(
+                                color: kAccentAmber,
+                                fontSize: 9.sp,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ),
@@ -431,21 +483,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
           SizedBox(height: 24.h),
           Text(
-            'Empty Archive',
-            style: GoogleFonts.dmSans(
+            'EMPTY ARCHIVE',
+            style: GoogleFonts.jetBrainsMono(
               color: kSecondaryText,
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
+              fontSize: 12.sp,
+              letterSpacing: 2.0,
             ),
           ),
           SizedBox(height: 8.h),
           Text(
             'Start cataloging your collection.',
-            style: GoogleFonts.inter(
-              color: kSecondaryText.withAlpha(100),
-              fontWeight: FontWeight.w700,
-              fontSize: 13.sp,
+            style: GoogleFonts.jetBrainsMono(
+              color: kSecondaryText.withAlpha(80),
+              fontWeight: FontWeight.w500,
+              fontSize: 11.sp,
             ),
           ),
         ],

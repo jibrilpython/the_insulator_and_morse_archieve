@@ -92,15 +92,24 @@ Color getConditionColor(ConditionState state) {
 // Glass Spectrum Colors (Updated for Kinetic Swatches)
 Color getGlassSwatchColor(String colorName) {
   final name = colorName.toLowerCase().trim();
-  if (name.contains('aqua') || name.contains('teal') || name.contains('cyan')) return const Color(0xFF7FFFD4);
-  if (name.contains('amber') || name.contains('yellow')) return const Color(0xFFFFBF00);
-  if (name.contains('blue') || name.contains('cobalt')) return const Color(0xFF007FFF);
-  if (name.contains('green') || name.contains('sage')) return const Color(0xFF50C878);
-  if (name.contains('purple') || name.contains('opal')) return const Color(0xFF9370DB);
-  if (name.contains('smoke') || name.contains('gray') || name.contains('grey')) return const Color(0xFF708090);
-  if (name.contains('clear') || name.contains('transparent')) return const Color(0xFFE5E4E2);
-  if (name.contains('white') || name.contains('milk')) return const Color(0xFFF5F5F5);
-  if (name.contains('brown') || name.contains('root beer')) return const Color(0xFF8B4513);
-  return kSecondaryText; // Default
+  bool matches(List<String> keywords) {
+    return keywords.any((k) => RegExp('\\b$k\\b').hasMatch(name));
+  }
+
+  if (matches(['aqua', 'teal', 'cyan'])) return const Color(0xFF7FFFD4);
+  if (matches(['blue', 'cobalt', 'sapphire'])) return const Color(0xFF007FFF);
+  if (matches(['amber', 'yellow', 'honey'])) return const Color(0xFFFFBF00);
+  if (matches(['green', 'sage', 'emerald'])) return const Color(0xFF50C878);
+  if (matches(['red', 'ruby', 'crimson'])) return const Color(0xFFFF4D4D);
+  if (matches(['orange', 'coral'])) return const Color(0xFFFF7F50);
+  if (matches(['gold', 'brass'])) return const Color(0xFFFFD700);
+  if (matches(['purple', 'opal', 'amethyst'])) return const Color(0xFF9370DB);
+  if (matches(['olive', 'khaki'])) return const Color(0xFF808000);
+  if (matches(['straw', 'champagne'])) return const Color(0xFFE4D96F);
+  if (matches(['smoke', 'gray', 'grey'])) return const Color(0xFF708090);
+  if (matches(['clear', 'transparent'])) return const Color(0xFFE5E4E2);
+  if (matches(['white', 'milk'])) return const Color(0xFFF5F5F5);
+  if (matches(['brown', 'root beer'])) return const Color(0xFF8B4513);
+  return kSecondaryText; // Default: Muted Pewter
 }
 

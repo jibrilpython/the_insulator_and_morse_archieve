@@ -42,7 +42,12 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
     if (widget.index < 0 || widget.index >= projectProv.entries.length) {
       return Scaffold(
         backgroundColor: kBackground,
-        body: Center(child: Text('SPECIMEN NOT FOUND', style: GoogleFonts.jetBrainsMono(color: kSecondaryText))),
+        body: Center(
+          child: Text(
+            'SPECIMEN NOT FOUND',
+            style: GoogleFonts.jetBrainsMono(color: kSecondaryText),
+          ),
+        ),
       );
     }
 
@@ -58,9 +63,7 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
         physics: const BouncingScrollPhysics(),
         slivers: [
           // 1. Full-Bleed Spotlight Image
-          SliverToBoxAdapter(
-            child: _buildSpotlightImage(imagePath, entry),
-          ),
+          SliverToBoxAdapter(child: _buildSpotlightImage(imagePath, entry)),
 
           // 2. Technical Panels (Staggered Bloom)
           SliverPadding(
@@ -72,15 +75,16 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
                   child: _buildIdentityHeader(entry, catColor),
                 ),
                 SizedBox(height: 32.h),
-                _bloomItem(
-                  index: 1,
-                  child: _buildTechnicalGrid(entry),
-                ),
+                _bloomItem(index: 1, child: _buildTechnicalGrid(entry)),
                 SizedBox(height: 24.h),
                 if (entry.markingsAndPatentDates.isNotEmpty) ...[
                   _bloomItem(
                     index: 2,
-                    child: _buildGlassCard('Markings & Patents', entry.markingsAndPatentDates, isMono: true),
+                    child: _buildGlassCard(
+                      'Markings & Patents',
+                      entry.markingsAndPatentDates,
+                      isMono: true,
+                    ),
                   ),
                   SizedBox(height: 20.h),
                 ],
@@ -99,10 +103,7 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
                   SizedBox(height: 20.h),
                 ],
                 if (entry.tags.isNotEmpty)
-                  _bloomItem(
-                    index: 5,
-                    child: _buildTags(entry),
-                  ),
+                  _bloomItem(index: 5, child: _buildTags(entry)),
               ]),
             ),
           ),
@@ -111,7 +112,11 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context, ProjectNotifier projectProv, int idx) {
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    ProjectNotifier projectProv,
+    int idx,
+  ) {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -129,7 +134,11 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
           onTap: () {
             HapticFeedback.lightImpact();
             projectProv.fillInput(ref, idx);
-            Navigator.pushNamed(context, '/add_screen', arguments: {'isEdit': true, 'currentIndex': idx});
+            Navigator.pushNamed(
+              context,
+              '/add_screen',
+              arguments: {'isEdit': true, 'currentIndex': idx},
+            );
           },
         ),
         SizedBox(width: 12.w),
@@ -143,7 +152,11 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
     );
   }
 
-  Widget _boxBtn({required IconData icon, required VoidCallback onTap, Color iconColor = kPrimaryText}) {
+  Widget _boxBtn({
+    required IconData icon,
+    required VoidCallback onTap,
+    Color iconColor = kPrimaryText,
+  }) {
     return Center(
       child: GestureDetector(
         onTap: onTap,
@@ -165,17 +178,21 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
     return Container(
       width: double.infinity,
       height: 440.h,
-      decoration: const BoxDecoration(
-        color: Color(0xFF050505),
-      ),
+      decoration: const BoxDecoration(color: Color(0xFF050505)),
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (imagePath != null && entry.photoPath.isNotEmpty && File(imagePath).existsSync())
-            Image.file(File(imagePath), fit: BoxFit.contain)
+          if (imagePath != null &&
+              entry.photoPath.isNotEmpty &&
+              File(imagePath).existsSync())
+            Image.file(File(imagePath), fit: BoxFit.cover)
           else
             Center(
-              child: Icon(Icons.water_drop_outlined, color: kOutline, size: 64.sp),
+              child: Icon(
+                Icons.water_drop_outlined,
+                color: kOutline,
+                size: 64.sp,
+              ),
             ),
           // Vignette
           Container(
@@ -183,7 +200,11 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
               gradient: RadialGradient(
                 center: Alignment.center,
                 radius: 0.8,
-                colors: [Colors.transparent, Colors.black.withAlpha(150), Colors.black],
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withAlpha(150),
+                  Colors.black,
+                ],
                 stops: const [0.5, 0.8, 1.0],
               ),
             ),
@@ -214,40 +235,63 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-              decoration: BoxDecoration(
-                color: catColor.withAlpha(30),
-                borderRadius: BorderRadius.circular(kRadiusSubtle),
-                border: Border.all(color: catColor.withAlpha(100)),
-              ),
-              child: Text(
-                entry.itemCategory.label,
-                style: GoogleFonts.dmSans(
-                  color: catColor,
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
+            Flexible(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                decoration: BoxDecoration(
+                  color: catColor.withAlpha(30),
+                  borderRadius: BorderRadius.circular(kRadiusSubtle),
+                  border: Border.all(color: catColor.withAlpha(100)),
+                ),
+                child: Text(
+                  entry.itemCategory.label,
+                  style: GoogleFonts.dmSans(
+                    color: catColor,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
-            const Spacer(),
-            Text(
-              entry.gridIdentifier.isEmpty ? 'SPECIMEN #---' : entry.gridIdentifier,
-              style: GoogleFonts.jetBrainsMono(color: kSecondaryText, fontSize: 11.sp),
+            SizedBox(width: 20.w),
+            Flexible(
+              child: Text(
+                entry.gridIdentifier.isEmpty
+                    ? 'SPECIMEN #---'
+                    : entry.gridIdentifier,
+                textAlign: TextAlign.right,
+                style: GoogleFonts.jetBrainsMono(
+                  color: kSecondaryText,
+                  fontSize: 11.sp,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
         SizedBox(height: 16.h),
         Text(
-          entry.manufacturerAndShopMark.isEmpty ? 'Unknown Origin' : entry.manufacturerAndShopMark,
+          entry.manufacturerAndShopMark.isEmpty
+              ? 'Unknown Origin'
+              : entry.manufacturerAndShopMark,
           style: Theme.of(context).textTheme.displayLarge,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
         if (entry.cdOrStyleNumber.isNotEmpty) ...[
           SizedBox(height: 8.h),
           Text(
             entry.cdOrStyleNumber,
-            style: GoogleFonts.dmSans(color: kAccent, fontSize: 20.sp, fontWeight: FontWeight.w400),
+            style: GoogleFonts.dmSans(
+              color: kAccent,
+              fontSize: 20.sp,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ],
       ],
@@ -264,13 +308,31 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
       ),
       child: Column(
         children: [
-          _techRow('Condition', entry.conditionState.label, icon: Icons.verified_user_outlined),
+          _techRow(
+            'Condition',
+            entry.conditionState.label,
+            icon: Icons.verified_user_outlined,
+          ),
           _divider(),
-          _techRow('Glass/Glaze', entry.glassColorOrGlazeType.isEmpty ? 'Not Specified' : entry.glassColorOrGlazeType, icon: Icons.lens_blur_rounded),
+          _techRow(
+            'Glass/Glaze',
+            entry.glassColorOrGlazeType.isEmpty
+                ? 'Not Specified'
+                : entry.glassColorOrGlazeType,
+            icon: Icons.lens_blur_rounded,
+          ),
           _divider(),
-          _techRow('Era', entry.eraOfProduction.isEmpty ? 'Unknown' : entry.eraOfProduction, icon: Icons.history_rounded),
+          _techRow(
+            'Era',
+            entry.eraOfProduction.isEmpty ? 'Unknown' : entry.eraOfProduction,
+            icon: Icons.history_rounded,
+          ),
           _divider(),
-          _techRow('Materials', entry.materials.isEmpty ? 'Mixed Hardware' : entry.materials, icon: Icons.category_outlined),
+          _techRow(
+            'Materials',
+            entry.materials.isEmpty ? 'Mixed Hardware' : entry.materials,
+            icon: Icons.category_outlined,
+          ),
         ],
       ),
     );
@@ -283,9 +345,24 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
         children: [
           Icon(icon, color: kSecondaryText, size: 18.sp),
           SizedBox(width: 12.w),
-          Text(label, style: GoogleFonts.inter(color: kSecondaryText, fontSize: 13.sp)),
-          const Spacer(),
-          Text(value, style: GoogleFonts.inter(color: kPrimaryText, fontSize: 14.sp, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: GoogleFonts.inter(color: kSecondaryText, fontSize: 13.sp),
+          ),
+          SizedBox(width: 24.w),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                color: kPrimaryText,
+                fontSize: 14.sp,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -318,8 +395,17 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
           Text(
             content,
             style: isMono
-                ? GoogleFonts.jetBrainsMono(color: kPrimaryText, fontSize: 13.sp, height: 1.5)
-                : GoogleFonts.inter(color: kPrimaryText, fontSize: 15.sp, height: 1.6, fontWeight: FontWeight.w300),
+                ? GoogleFonts.jetBrainsMono(
+                    color: kPrimaryText,
+                    fontSize: 13.sp,
+                    height: 1.5,
+                  )
+                : GoogleFonts.inter(
+                    color: kPrimaryText,
+                    fontSize: 15.sp,
+                    height: 1.6,
+                    fontWeight: FontWeight.w300,
+                  ),
           ),
         ],
       ),
@@ -330,15 +416,25 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
     return Wrap(
       spacing: 8.w,
       runSpacing: 8.h,
-      children: entry.tags.map((t) => Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: kPanelBg.withAlpha(150),
-          borderRadius: BorderRadius.circular(kRadiusPill),
-          border: Border.all(color: kOutline),
-        ),
-        child: Text('#$t', style: GoogleFonts.jetBrainsMono(color: kAccent, fontSize: 11.sp)),
-      )).toList(),
+      children: entry.tags
+          .map(
+            (t) => Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: kPanelBg.withAlpha(150),
+                borderRadius: BorderRadius.circular(kRadiusPill),
+                border: Border.all(color: kOutline),
+              ),
+              child: Text(
+                '#$t',
+                style: GoogleFonts.jetBrainsMono(
+                  color: kAccent,
+                  fontSize: 11.sp,
+                ),
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -367,7 +463,11 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
     );
   }
 
-  void _showDeleteDialog(BuildContext context, ProjectNotifier projectProv, int idx) {
+  void _showDeleteDialog(
+    BuildContext context,
+    ProjectNotifier projectProv,
+    int idx,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -376,17 +476,35 @@ class _InfoScreenState extends ConsumerState<InfoScreen>
           borderRadius: BorderRadius.circular(kRadiusLarge),
           side: const BorderSide(color: kOutline),
         ),
-        title: Text('Delete Specimen?', style: GoogleFonts.dmSans(color: kPrimaryText, fontWeight: FontWeight.w400)),
-        content: Text('This action will permanently remove the item from the archive.', style: GoogleFonts.inter(color: kSecondaryText)),
+        title: Text(
+          'Delete Specimen?',
+          style: GoogleFonts.dmSans(
+            color: kPrimaryText,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        content: Text(
+          'This action will permanently remove the item from the archive.',
+          style: GoogleFonts.inter(color: kSecondaryText),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('CANCEL', style: GoogleFonts.jetBrainsMono(color: kSecondaryText))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'CANCEL',
+              style: GoogleFonts.jetBrainsMono(color: kSecondaryText),
+            ),
+          ),
           TextButton(
             onPressed: () {
               projectProv.deleteEntry(idx);
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            child: Text('DELETE', style: GoogleFonts.jetBrainsMono(color: kError)),
+            child: Text(
+              'DELETE',
+              style: GoogleFonts.jetBrainsMono(color: kError),
+            ),
           ),
         ],
       ),

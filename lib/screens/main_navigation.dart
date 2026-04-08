@@ -61,22 +61,22 @@ class _MainNavigationState extends ConsumerState<MainNavigation>
     return ClipRRect(
       borderRadius: BorderRadius.circular(kRadiusXLarge),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
-          height: 72.h,
+          height: 76.h,
           padding: EdgeInsets.symmetric(horizontal: 8.w),
           decoration: BoxDecoration(
-            color: kPanelBg.withAlpha(180),
+            color: kPanelBg.withAlpha(80),
             borderRadius: BorderRadius.circular(kRadiusXLarge),
             border: Border.all(
-              color: Colors.white.withAlpha(20),
+              color: Colors.white.withAlpha(30),
               width: 1.0,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(100),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
+                color: Colors.black.withAlpha(120),
+                blurRadius: 40,
+                offset: const Offset(0, 15),
               ),
             ],
           ),

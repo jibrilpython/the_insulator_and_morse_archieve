@@ -73,7 +73,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                 padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 140.h),
                 sliver: allEntries.isEmpty
                     ? SliverFillRemaining(
-                        hasScrollBody: false, child: _buildEmptyState())
+                        hasScrollBody: false,
+                        child: _buildEmptyState(),
+                      )
                     : SliverList(
                         delegate: SliverChildListDelegate([
                           _buildIntegrityHero(allEntries),
@@ -100,39 +102,89 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
   }
 
   Widget _buildModernAppBar() {
-    return SliverAppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      expandedHeight: 100.h,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-        title: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(20.w, 64.h, 20.w, 0),
+      sliver: SliverToBoxAdapter(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Archive Metrics',
-                  style: GoogleFonts.dmSans(
-                    color: kAccent,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'METRIC REGISTRY // ANALYTICS',
+                      style: GoogleFonts.jetBrainsMono(
+                        color: kAccent,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      'THE\nMETRICS',
+                      style: GoogleFonts.dmSans(
+                        color: kPrimaryText,
+                        fontSize: 48.sp,
+                        fontWeight: FontWeight.w900,
+                        height: 0.9,
+                        letterSpacing: -2.0,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  'Pulse',
-                  style: GoogleFonts.dmSans(
-                    color: kPrimaryText,
-                    fontSize: 24.sp,
-                    fontWeight: FontWeight.w400,
+                Container(
+                  padding: EdgeInsets.all(12.w),
+                  decoration: BoxDecoration(
+                    color: kPanelBg.withAlpha(150),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: kOutline),
+                  ),
+                  child: Icon(
+                    Icons.query_stats_rounded,
+                    color: kAccent,
+                    size: 24.sp,
                   ),
                 ),
               ],
             ),
-            const Spacer(),
-            Icon(Icons.query_stats_rounded, color: kAccent, size: 24.sp),
+            SizedBox(height: 24.h),
+            // Status Pill
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+              decoration: BoxDecoration(
+                color: kPanelBg.withAlpha(150),
+                borderRadius: BorderRadius.circular(kRadiusPill),
+                border: Border.all(color: kOutline),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6.w,
+                    height: 6.w,
+                    decoration: const BoxDecoration(
+                      color: kAccent,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Text(
+                    'PULSE // STABLE',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: kPrimaryText,
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -141,66 +193,99 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
 
   Widget _buildIntegrityHero(List<ArchiveItemModel> entries) {
     return Container(
-      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: kPanelBg.withAlpha(200),
-        borderRadius: BorderRadius.circular(kRadiusXLarge),
+        color: kPanelBg.withAlpha(150),
+        borderRadius: BorderRadius.circular(kRadiusLarge),
         border: Border.all(color: kOutline),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'TOTAL SPECIMENS',
-                  style: GoogleFonts.dmSans(
-                    color: kSecondaryText,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            // Left Metric
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TOTAL SPECIMENS',
+                      style: GoogleFonts.dmSans(
+                        color: kSecondaryText,
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Text(
+                      entries.length.toString().padLeft(2, '0'),
+                      style: GoogleFonts.dmSans(
+                        color: kPrimaryText,
+                        fontSize: 40.sp,
+                        fontWeight: FontWeight.w700,
+                        height: 1.0,
+                        letterSpacing: -1.0,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  entries.length.toString().padLeft(2, '0'),
-                  style: GoogleFonts.dmSans(
-                    color: kPrimaryText,
-                    fontSize: 44.sp,
-                    fontWeight: FontWeight.w300,
-                    letterSpacing: -1.0,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          Container(width: 1, height: 32.h, color: kOutline),
-          SizedBox(width: 20.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'GROWTH RATE',
-                  style: GoogleFonts.dmSans(
-                    color: kSecondaryText,
-                    fontSize: 10.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  '+12%',
-                  style: GoogleFonts.dmSans(
-                    color: kAccent,
-                    fontSize: 26.sp,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
+            VerticalDivider(
+              color: kOutline,
+              width: 1,
+              indent: 20.h,
+              endIndent: 20.h,
             ),
-          ),
-        ],
+            // Right Metric
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'GROWTH RATE',
+                      style: GoogleFonts.dmSans(
+                        color: kSecondaryText,
+                        fontSize: 9.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          '+12',
+                          style: GoogleFonts.dmSans(
+                            color: kAccent,
+                            fontSize: 32.sp,
+                            fontWeight: FontWeight.w700,
+                            height: 1.0,
+                          ),
+                        ),
+                        Text(
+                          '%',
+                          style: GoogleFonts.dmSans(
+                            color: kAccent.withAlpha(150),
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -294,8 +379,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                                   boxShadow: isSelected
                                       ? [
                                           BoxShadow(
-                                              color: getConditionColor(s),
-                                              blurRadius: 4)
+                                            color: getConditionColor(s),
+                                            blurRadius: 4,
+                                          ),
                                         ]
                                       : null,
                                 ),
@@ -366,8 +452,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                   margin: EdgeInsets.only(right: 12.w),
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   decoration: BoxDecoration(
-                    color:
-                        isSelected ? kAccent.withAlpha(40) : kPanelBg.withAlpha(100),
+                    color: isSelected
+                        ? kAccent.withAlpha(40)
+                        : kPanelBg.withAlpha(100),
                     borderRadius: BorderRadius.circular(kRadiusPill),
                     border: Border.all(
                       color: isSelected ? kAccent : kOutline,
@@ -380,7 +467,9 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
                     style: GoogleFonts.dmSans(
                       color: isSelected ? kAccent : kSecondaryText,
                       fontSize: 14.sp,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w400,
                     ),
                   ),
                 ),
@@ -407,23 +496,30 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
 
     if (counts.isEmpty) return const SizedBox();
 
-    final topMaker =
-        counts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+    final topMaker = counts.entries
+        .reduce((a, b) => a.value > b.value ? a : b)
+        .key;
 
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: kPanelBg.withAlpha(100),
+        color: kPanelBg.withAlpha(150),
         borderRadius: BorderRadius.circular(kRadiusLarge),
-        border: Border.all(color: kOutline.withAlpha(100)),
+        border: Border.all(color: kOutline),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(12.w),
-            decoration:
-                const BoxDecoration(color: kBackground, shape: BoxShape.circle),
-            child: Icon(Icons.auto_awesome_rounded, color: kAccent, size: 18.sp),
+            decoration: const BoxDecoration(
+              color: kBackground,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.auto_awesome_rounded,
+              color: kAccent,
+              size: 18.sp,
+            ),
           ),
           SizedBox(width: 16.w),
           Expanded(
@@ -556,11 +652,7 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
           ),
         ),
         const Spacer(),
-        Container(
-          width: 40.w,
-          height: 1,
-          color: kOutline,
-        ),
+        Container(width: 40.w, height: 1, color: kOutline),
       ],
     );
   }
@@ -569,14 +661,18 @@ class _StatsScreenState extends ConsumerState<StatsScreen>
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-          color: kPanelBg.withAlpha(50),
-          borderRadius: BorderRadius.circular(kRadiusLarge),
-          border: Border.all(color: kOutline, style: BorderStyle.solid)),
+        color: kPanelBg.withAlpha(50),
+        borderRadius: BorderRadius.circular(kRadiusLarge),
+        border: Border.all(color: kOutline, style: BorderStyle.solid),
+      ),
       child: Center(
         child: Text(
-          msg,
-          style: GoogleFonts.inter(
-              color: kSecondaryText.withAlpha(100), fontSize: 12.sp),
+          msg.toUpperCase(),
+          style: GoogleFonts.jetBrainsMono(
+            color: kSecondaryText.withAlpha(120),
+            fontSize: 10.sp,
+            letterSpacing: 1.0,
+          ),
         ),
       ),
     );
@@ -633,12 +729,18 @@ class _DataMeshPainter extends CustomPainter {
       ..strokeWidth = 0.5;
 
     for (var i = 0; i < size.width; i += 40) {
-      canvas.drawLine(Offset(i.toDouble(), 0), Offset(i.toDouble(), size.height),
-          gridPaint);
+      canvas.drawLine(
+        Offset(i.toDouble(), 0),
+        Offset(i.toDouble(), size.height),
+        gridPaint,
+      );
     }
     for (var i = 0; i < size.height; i += 40) {
       canvas.drawLine(
-          Offset(0, i.toDouble()), Offset(size.width, i.toDouble()), gridPaint);
+        Offset(0, i.toDouble()),
+        Offset(size.width, i.toDouble()),
+        gridPaint,
+      );
     }
   }
 
@@ -680,12 +782,22 @@ class _OrbitalIntegrityPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 20
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-        canvas.drawArc(Rect.fromCircle(center: center, radius: radius - 10),
-            startAngle + 0.1, sweepAngle - 0.2, false, glowPaint);
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: radius - 10),
+          startAngle + 0.1,
+          sweepAngle - 0.2,
+          false,
+          glowPaint,
+        );
       }
 
-      canvas.drawArc(Rect.fromCircle(center: center, radius: radius - 10),
-          startAngle + 0.1, sweepAngle - 0.2, false, paint);
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius - 10),
+        startAngle + 0.1,
+        sweepAngle - 0.2,
+        false,
+        paint,
+      );
       startAngle += sweepAngle;
     }
 
