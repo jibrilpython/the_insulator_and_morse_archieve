@@ -54,6 +54,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen>
 
           // 2. Main Content
           SafeArea(
+            bottom: false,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 40.h),
               child: Column(
